@@ -1,324 +1,178 @@
-<?php 
-	include ("style/header.php");
-	include ("style/sidebar.php");
-	include ("../config/koneksi.php");
-	function tgl_indo($tanggal){
-		$bulan = array(
-			1 => 'Januari',
-			'Februari',
-			'Maret',
-			'April',
-			'Mei',
-			'Juni',
-			'Juli',
-			'Agustus',
-			'September',
-			'Oktober',
-			'November',
-			'Desember',);
-		$pecahkan = explode('-', $tanggal);
-		return $pecahkan[2] . '-' . $bulan[(int)$pecahkan[1]] . '-' . $pecahkan[0];
-	}
+<?php
+include("style/header.php");
+include("style/sidebar.php");
+include("../config/koneksi.php");
+function tgl_indo($t){$b=[1=>'Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];$p=explode('-',$t);return $p[2].'-'.$b[(int)$p[1]].'-'.$p[0];}
+$yr=(int)date('Y');
+$nm=['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+$mode=(isset($_POST['filter_mode'])&&$_POST['filter_mode']==='rentang')?'rentang':'bulanan';
+$bv=isset($_POST['bulan'])?(int)$_POST['bulan']:0;
+$tv=isset($_POST['tahun'])?(int)$_POST['tahun']:$yr;
+$dari=(isset($_POST['tgl_dari'])&&$_POST['tgl_dari'])?$_POST['tgl_dari']:date('Y-m-01');
+$sampai=(isset($_POST['tgl_sampai'])&&$_POST['tgl_sampai'])?$_POST['tgl_sampai']:date('Y-m-d');
+$dari=date('Y-m-d',strtotime($dari));$sampai=date('Y-m-d',strtotime($sampai));
 ?>
 
 <div class="sk-header-row">
   <div>
     <h1 class="sk-page-title">Laporan Simpanan</h1>
-    <p class="sk-page-subtitle">Rekap simpanan pokok &amp; wajib per bulan</p>
+    <p class="sk-page-subtitle">Rekap simpanan pokok &amp; wajib per periode</p>
   </div>
 </div>
 
-<!-- Filter Card -->
 <div class="sk-filter-card">
-  <form action="" method="post">
-    <div class="sk-filter-group">
+  <form action="" method="post" id="lap-form">
+    <input type="hidden" name="filter_mode" id="fmode" value="<?php echo $mode;?>">
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button type="button" id="tab-b" onclick="swMode('bulanan')" class="sk-btn sk-btn-sm <?php echo $mode==='bulanan'?'sk-btn-primary':'sk-btn-outline';?>"><i class="fa fa-calendar"></i> Bulan &amp; Tahun</button>
+      <button type="button" id="tab-r" onclick="swMode('rentang')" class="sk-btn sk-btn-sm <?php echo $mode==='rentang'?'sk-btn-primary':'sk-btn-outline';?>"><i class="fa fa-calendar-o"></i> Rentang Tanggal</button>
+    </div>
+    <div class="sk-filter-group" id="gb" <?php echo $mode==='rentang'?'style="display:none"':'';?>>
       <label class="sk-filter-label">Bulan</label>
       <select name="bulan" class="sk-filter-select">
         <option value="">Pilih Bulan</option>
-        <option value="1">Januari</option>
-        <option value="2">Februari</option>
-        <option value="3">Maret</option>
-        <option value="4">April</option>
-        <option value="5">Mei</option>
-        <option value="6">Juni</option>
-        <option value="7">Juli</option>
-        <option value="8">Agustus</option>
-        <option value="9">September</option>
-        <option value="10">Oktober</option>
-        <option value="11">November</option>
-        <option value="12">Desember</option>
+        <?php for($b=1;$b<=12;$b++): ?>
+        <option value="<?php echo $b;?>" <?php echo $bv===$b?'selected':'';?>><?php echo $nm[$b];?></option>
+        <?php endfor;?>
       </select>
       <label class="sk-filter-label">Tahun</label>
       <select name="tahun" class="sk-filter-select">
         <option value="">Pilih Tahun</option>
-        <option value="2018">2018</option>
-        <option value="2019">2019</option>
-        <option value="2020">2020</option>
-        <option value="2021">2021</option>
-        <option value="2022">2022</option>
+        <?php for($y=$yr;$y>=2018;$y--): ?>
+        <option value="<?php echo $y;?>" <?php echo $tv===$y?'selected':'';?>><?php echo $y;?></option>
+        <?php endfor;?>
       </select>
-      <button type="submit" name="cari" class="sk-btn sk-btn-primary"><i class="fa fa-search"></i> Cek Data</button>
     </div>
+    <div class="sk-filter-group" id="gr" <?php echo $mode==='bulanan'?'style="display:none"':'';?>>
+      <label class="sk-filter-label">Dari</label>
+      <input type="date" name="tgl_dari" class="sk-filter-select" value="<?php echo htmlspecialchars($dari);?>">
+      <label class="sk-filter-label">Sampai</label>
+      <input type="date" name="tgl_sampai" class="sk-filter-select" value="<?php echo htmlspecialchars($sampai);?>">
+    </div>
+    <button type="submit" name="cari" class="sk-btn sk-btn-primary"><i class="fa fa-search"></i> Cek Data</button>
   </form>
 </div>
 
-<?php
-$no = 1;
-if(isset($_POST['cari'])){
-  $bulan = $_POST['bulan'];
-  $tahun = $_POST['tahun'];
+<?php if(isset($_POST['cari'])):
+  if($mode==='rentang'){
+    $wp="tgl_simpanan BETWEEN '$dari' AND '$sampai' AND jenis_simpanan='Simpanan Pokok'";
+    $ww="tgl_simpanan BETWEEN '$dari' AND '$sampai' AND jenis_simpanan='Simpanan Wajib'";
+    $label=tgl_indo($dari).' s/d '.tgl_indo($sampai);
+    $cq_sql="SELECT DATE_FORMAT(tgl_simpanan,'%Y-%m') as ym,jenis_simpanan,SUM(jumlah_simpanan) as tot FROM tbl_simpanan WHERE tgl_simpanan BETWEEN '$dari' AND '$sampai' GROUP BY ym,jenis_simpanan ORDER BY ym";
+  } else {
+    $wp="month(tgl_simpanan)=$bv AND year(tgl_simpanan)=$tv AND jenis_simpanan='Simpanan Pokok'";
+    $ww="month(tgl_simpanan)=$bv AND year(tgl_simpanan)=$tv AND jenis_simpanan='Simpanan Wajib'";
+    $label=($bv?$nm[$bv]:'Semua Bulan').' '.$tv;
+    $cq_sql="SELECT MONTH(tgl_simpanan) as m,jenis_simpanan,SUM(jumlah_simpanan) as tot FROM tbl_simpanan WHERE YEAR(tgl_simpanan)=$tv GROUP BY m,jenis_simpanan ORDER BY m";
+  }
+  $cl=[];$cp=[];$cw=[];
+  if($mode==='rentang'){
+    $tmp=[];
+    $cq=mysqli_query($konek,$cq_sql);
+    while($cr=mysqli_fetch_assoc($cq)){$k=$cr['ym'];if(!isset($tmp[$k]))$tmp[$k]=['p'=>0,'w'=>0];if($cr['jenis_simpanan']==='Simpanan Pokok')$tmp[$k]['p']=(int)$cr['tot'];else $tmp[$k]['w']=(int)$cr['tot'];}
+    foreach($tmp as $ym=>$v){$cl[]=$ym;$cp[]=$v['p'];$cw[]=$v['w'];}
+    $ctitle='Grafik Simpanan — '.htmlspecialchars($dari).' s/d '.htmlspecialchars($sampai);
+  } else {
+    $cl=array_slice($nm,1);$cp=array_fill(0,12,0);$cw=array_fill(0,12,0);
+    $cq=mysqli_query($konek,$cq_sql);
+    while($cr=mysqli_fetch_assoc($cq)){$i=(int)$cr['m']-1;if($cr['jenis_simpanan']==='Simpanan Pokok')$cp[$i]=(int)$cr['tot'];else $cw[$i]=(int)$cr['tot'];}
+    $ctitle='Grafik Simpanan Tahun '.$tv;
+  }
 ?>
 
-<!-- Simpanan Pokok -->
+<div class="sk-card" style="margin-bottom:24px;">
+  <div class="sk-card-header">
+    <h5 class="sk-card-title"><i class="fa fa-bar-chart" style="color:#2563EB"></i>&nbsp; <?php echo $ctitle;?></h5>
+  </div>
+  <div style="padding:16px 24px 24px;">
+    <canvas id="chartSimpanan" height="100"></canvas>
+  </div>
+</div>
+
 <div class="sk-card" style="margin-bottom:24px;">
   <div class="sk-card-header" style="display:flex;align-items:center;justify-content:space-between;">
-    <h5 class="sk-card-title"><i class="fa fa-folder" style="color:#2563EB"></i>&nbsp; Simpanan Pokok</h5>
-    <a href="cetaksimpananpokok.php?bulan=<?php echo $bulan;?>&tahun=<?php echo $tahun ?>" target="_blank" class="sk-btn sk-btn-outline sk-btn-sm"><i class="fa fa-print"></i> Cetak</a>
+    <h5 class="sk-card-title"><i class="fa fa-folder" style="color:#2563EB"></i>&nbsp; Simpanan Pokok &mdash; <?php echo $label;?></h5>
+    <a href="cetaksimpananpokok.php?bulan=<?php echo $bv;?>&tahun=<?php echo $tv;?>" target="_blank" class="sk-btn sk-btn-outline sk-btn-sm"><i class="fa fa-print"></i> Cetak</a>
   </div>
   <div class="sk-table-wrap">
     <table class="sk-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>ID Simpanan</th>
-          <th>Tanggal</th>
-          <th>ID Anggota</th>
-          <th>Nama Anggota</th>
-          <th>Jenis</th>
-          <th>Jumlah</th>
-        </tr>
-      </thead>
+      <thead><tr><th>No</th><th>ID Simpanan</th><th>Tanggal</th><th>ID Anggota</th><th>Nama Anggota</th><th>Jenis</th><th>Jumlah</th></tr></thead>
       <tbody>
-        <?php 
-        $no = 1;
-        $simpan = 0;
-        include ("../config/koneksi.php");
-        $sql = mysqli_query($konek, "SELECT * FROM tbl_simpanan a LEFT JOIN tbl_anggota b ON a.id_anggota=b.id_anggota WHERE month(a.tgl_simpanan) = '$bulan' AND year(a.tgl_simpanan) = '$tahun' AND a.jenis_simpanan='Simpanan Pokok'");
-        while ($data = mysqli_fetch_array($sql)){
-          $simpan += $data['jumlah_simpanan'];
-        ?>
+        <?php $no=1;$simpan=0;
+        $sql=mysqli_query($konek,"SELECT * FROM tbl_simpanan a LEFT JOIN tbl_anggota b ON a.id_anggota=b.id_anggota WHERE $wp");
+        while($data=mysqli_fetch_array($sql)){$simpan+=$data['jumlah_simpanan'];?>
         <tr>
-          <td><?php echo $no++; ?></td>
-          <td><span class="sk-id-link"><?php echo $data['id_simpanan']; ?></span></td>
-          <td><?php echo tgl_indo($data['tgl_simpanan']); ?></td>
-          <td><?php echo $data['id_anggota']; ?></td>
-          <td><?php echo htmlspecialchars($data['nama_anggota']); ?></td>
-          <td><span class="sk-badge pokok"><?php echo htmlspecialchars($data['jenis_simpanan']); ?></span></td>
-          <td class="amt-blue"><?php echo 'Rp '.number_format($data['jumlah_simpanan'],0,',','.'); ?></td>
+          <td><?php echo $no++;?></td>
+          <td><span class="sk-id-link"><?php echo $data['id_simpanan'];?></span></td>
+          <td><?php echo tgl_indo($data['tgl_simpanan']);?></td>
+          <td><?php echo $data['id_anggota'];?></td>
+          <td><?php echo htmlspecialchars($data['nama_anggota']);?></td>
+          <td><span class="sk-badge pokok"><?php echo htmlspecialchars($data['jenis_simpanan']);?></span></td>
+          <td class="amt-blue"><?php echo 'Rp '.number_format($data['jumlah_simpanan'],0,',','.');?></td>
         </tr>
-        <?php } ?>
-        <tr class="sk-total-row">
-          <th colspan="6">Total Simpanan Pokok</th>
-          <th><?php echo 'Rp '.number_format($simpan,0,',','.'); ?></th>
-        </tr>
+        <?php }?>
+        <tr class="sk-total-row"><th colspan="6">Total Simpanan Pokok</th><th><?php echo 'Rp '.number_format($simpan,0,',','.');?></th></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<!-- Simpanan Wajib -->
 <div class="sk-card">
   <div class="sk-card-header" style="display:flex;align-items:center;justify-content:space-between;">
-    <h5 class="sk-card-title"><i class="fa fa-folder-open" style="color:#059669"></i>&nbsp; Simpanan Wajib</h5>
-    <a href="cetaksimpananwajib.php?bulan=<?php echo $bulan;?>&tahun=<?php echo $tahun ?>" target="_blank" class="sk-btn sk-btn-outline sk-btn-sm"><i class="fa fa-print"></i> Cetak</a>
+    <h5 class="sk-card-title"><i class="fa fa-folder-open" style="color:#059669"></i>&nbsp; Simpanan Wajib &mdash; <?php echo $label;?></h5>
+    <a href="cetaksimpananwajib.php?bulan=<?php echo $bv;?>&tahun=<?php echo $tv;?>" target="_blank" class="sk-btn sk-btn-outline sk-btn-sm"><i class="fa fa-print"></i> Cetak</a>
   </div>
   <div class="sk-table-wrap">
     <table class="sk-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>ID Simpanan</th>
-          <th>Tanggal</th>
-          <th>ID Anggota</th>
-          <th>Nama Anggota</th>
-          <th>Jenis</th>
-          <th>Jumlah</th>
-        </tr>
-      </thead>
+      <thead><tr><th>No</th><th>ID Simpanan</th><th>Tanggal</th><th>ID Anggota</th><th>Nama Anggota</th><th>Jenis</th><th>Jumlah</th></tr></thead>
       <tbody>
-        <?php 
-        $no = 1;
-        $simpan2 = 0;
-        include ("../config/koneksi.php");
-        $sql = mysqli_query($konek, "SELECT * FROM tbl_simpanan a LEFT JOIN tbl_anggota b ON a.id_anggota=b.id_anggota WHERE month(a.tgl_simpanan) = '$bulan' AND year(a.tgl_simpanan) = '$tahun' AND a.jenis_simpanan='Simpanan Wajib'");
-        while ($data = mysqli_fetch_array($sql)){
-          $simpan2 += $data['jumlah_simpanan'];
-        ?>
+        <?php $no=1;$simpan2=0;
+        $sql=mysqli_query($konek,"SELECT * FROM tbl_simpanan a LEFT JOIN tbl_anggota b ON a.id_anggota=b.id_anggota WHERE $ww");
+        while($data=mysqli_fetch_array($sql)){$simpan2+=$data['jumlah_simpanan'];?>
         <tr>
-          <td><?php echo $no++; ?></td>
-          <td><span class="sk-id-link"><?php echo $data['id_simpanan']; ?></span></td>
-          <td><?php echo tgl_indo($data['tgl_simpanan']); ?></td>
-          <td><?php echo $data['id_anggota']; ?></td>
-          <td><?php echo htmlspecialchars($data['nama_anggota']); ?></td>
-          <td><span class="sk-badge wajib"><?php echo htmlspecialchars($data['jenis_simpanan']); ?></span></td>
-          <td class="amt-blue"><?php echo 'Rp '.number_format($data['jumlah_simpanan'],0,',','.'); ?></td>
+          <td><?php echo $no++;?></td>
+          <td><span class="sk-id-link"><?php echo $data['id_simpanan'];?></span></td>
+          <td><?php echo tgl_indo($data['tgl_simpanan']);?></td>
+          <td><?php echo $data['id_anggota'];?></td>
+          <td><?php echo htmlspecialchars($data['nama_anggota']);?></td>
+          <td><span class="sk-badge wajib"><?php echo htmlspecialchars($data['jenis_simpanan']);?></span></td>
+          <td class="amt-blue"><?php echo 'Rp '.number_format($data['jumlah_simpanan'],0,',','.');?></td>
         </tr>
-        <?php } ?>
-        <tr class="sk-total-row">
-          <th colspan="6">Total Simpanan Wajib</th>
-          <th><?php echo 'Rp '.number_format($simpan2,0,',','.'); ?></th>
-        </tr>
+        <?php }?>
+        <tr class="sk-total-row"><th colspan="6">Total Simpanan Wajib</th><th><?php echo 'Rp '.number_format($simpan2,0,',','.');?></th></tr>
       </tbody>
     </table>
   </div>
 </div>
 
-<?php } ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  new Chart(document.getElementById('chartSimpanan'),{
+    type:'bar',
+    data:{
+      labels:<?php echo json_encode(array_values($cl));?>,
+      datasets:[
+        {label:'Simpanan Pokok',data:<?php echo json_encode(array_values($cp));?>,backgroundColor:'rgba(37,99,235,0.75)',borderRadius:5},
+        {label:'Simpanan Wajib', data:<?php echo json_encode(array_values($cw));?>,backgroundColor:'rgba(5,150,105,0.75)',borderRadius:5}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'},tooltip:{callbacks:{label:function(c){return c.dataset.label+': Rp '+c.raw.toLocaleString('id-ID');}}}},
+      scales:{y:{beginAtZero:true,ticks:{callback:function(v){return 'Rp '+v.toLocaleString('id-ID');}}}}}
+  });
+})();
+</script>
 
-<?php include ("style/footer.php"); ?>
-				<div class="select-group">
-					<select name="bulan" class="form-control" style="width: 15%; margin-bottom: 5px;">
-						<option value="">Pilih Bulan</option>
-						<option value="1">Januari</option>
-						<option value="2">Februari</option>
-						<option value="3">Maret</option>
-						<option value="4">April</option>
-						<option value="5">Mei</option>
-						<option value="6">Juni</option>
-						<option value="7">Juli</option>
-						<option value="8">Agustus</option>
-						<option value="9">September</option>
-						<option value="10">Oktober</option>
-						<option value="11">November</option>
-						<option value="12">Desember</option>
-					</select>
-				</div>
-				<div class="select-group">
-					<select name="tahun" class="form-control" style="width: 15%; margin-bottom: 5px;">
-						<option value="">Pilih Tahun</option>
-						<option value="2018">2018</option>
-						<option value="2019">2019</option>
-						<option value="2020">2020</option>
-						<option value="2021">2021</option>
-						<option value="2022">2022</option>
-					</select>
-					<span class="select-group-btn">
-						<button type="submit" class="btn btn-success btn-flat" name="cari">Check</button>
-					</span>
-				</div>
-			</form>
-			<br>
-			<?php
-			$no = 1;
-			if(isset($_POST['cari'])){
-				$bulan 	= $_POST['bulan'];
-				$tahun 	= $_POST['tahun'];
-			?>
-		</div>
-	</div>
+<?php endif;?>
 
-	<div class="box box-primary">
-		<div class="box-header with-border">
-			<h3 class="box-title">Laporan Simpanan Pokok</h3>
-		</div>
-		<!-- /.box-header -->
-		<div class="box-body">
-			<div class="table-responsive">
-				<table class="table table-bordered">
-					<thead>
-						<tr>
-							<th style="text-align: center;">No</th>
-							<th style="text-align: center;">ID Simpanan</th>
-							<th style="text-align: center;">Tanggal Simpanan</th>
-							<th style="text-align: center;">ID Anggota</th>
-							<th style="text-align: center;">Nama Anggota</th>
-							<th style="text-align: center;">Jenis Simpanan</th>
-							<th style="text-align: center;">Jumlah Simpanan</th>
-						</tr>
-					</thead>
-					<?php 
-					$no = 1;
-					include ("../config/koneksi.php");
-					$simpan=0;
-					$sql = mysqli_query($konek, "SELECT * FROM tbl_simpanan a LEFT JOIN tbl_anggota b ON a.id_anggota=b.id_anggota WHERE month(a.tgl_simpanan) = '$bulan' AND year(a.tgl_simpanan) = '$tahun' AND a.jenis_simpanan='Simpanan Pokok'");
-					?>
-					<div class="btn-group" style="margin-bottom: 5px;">
-					<a href="cetaksimpananpokok.php?bulan=<?php echo $bulan;?>&tahun=<?php echo $tahun ?>" target="_blank();" class="btn btn-primary btn-flat"><i class="fa fa-print"></i></a>
-					</div>
-					<?php
-					while ($data = mysqli_fetch_array($sql)){
-						$simpan = $simpan+$data['jumlah_simpanan'];
-					?>
-					<tbody>
-						<tr>
-							<td><?php echo $no++; ?></td>
-							<td><?php echo $data['id_simpanan']; ?></td>
-							<td><?php echo tgl_indo($data['tgl_simpanan']); ?></td>
-							<td><?php echo $data['id_anggota']; ?></td>
-							<td><?php echo $data['nama_anggota']; ?></td>
-							<td><?php echo $data['jenis_simpanan']; ?></td>
-							<td><?php echo "Rp ".number_format($data['jumlah_simpanan'],0,',','.');?></td>
-						</tr>
-					<?php 
-					}
-					?>
-						<tr>
-							<th colspan="6" style="text-align: center;">Total</th>
-							<td><?php echo "Rp ".number_format($simpan,0,',','.'); ?></td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+<script>
+function swMode(m){
+  document.getElementById('fmode').value=m;
+  document.getElementById('gb').style.display=m==='bulanan'?'':'none';
+  document.getElementById('gr').style.display=m==='rentang'?'':'none';
+  document.getElementById('tab-b').className='sk-btn sk-btn-sm '+(m==='bulanan'?'sk-btn-primary':'sk-btn-outline');
+  document.getElementById('tab-r').className='sk-btn sk-btn-sm '+(m==='rentang'?'sk-btn-primary':'sk-btn-outline');
+}
+</script>
 
-	<div class="box box-primary">
-		<div class="box-header with-border">
-			<h3 class="box-title">Laporan Simpanan Wajib</h3>
-		</div>
-		<!-- /.box-header -->
-		<div class="box-body">
-			<div class="table-responsive">
-				<table class="table table-bordered">
-					<thead>
-						<tr>
-							<th style="text-align: center;">No</th>
-							<th style="text-align: center;">ID Simpanan</th>
-							<th style="text-align: center;">Tanggal Simpanan</th>
-							<th style="text-align: center;">ID Anggota</th>
-							<th style="text-align: center;">Nama Anggota</th>
-							<th style="text-align: center;">Jenis Simpanan</th>
-							<th style="text-align: center;">Jumlah Simpanan</th>
-						</tr>
-					</thead>
-					<?php 
-					$no = 1;
-					$simpan2 = 0;
-					include ("../config/koneksi.php");
-					$sql = mysqli_query($konek, "SELECT * FROM tbl_simpanan a LEFT JOIN tbl_anggota b ON a.id_anggota=b.id_anggota WHERE month(a.tgl_simpanan) = '$bulan' AND year(a.tgl_simpanan) = '$tahun' AND a.jenis_simpanan='Simpanan Wajib'");
-					?>
-					<div class="btn-group" style="margin-bottom: 5px;">
-					<a href="cetaksimpananwajib.php?bulan=<?php echo $bulan;?>&tahun=<?php echo $tahun ?>" target="_blank();" class="btn btn-primary btn-flat"><i class="fa fa-print"></i></a>
-					</div>
-					<?php
-					while ($data = mysqli_fetch_array($sql)){
-						$simpan2 = $simpan2+$data['jumlah_simpanan'];
-					?>
-					<tbody>
-						<tr>
-							<td><?php echo $no++; ?></td>
-							<td><?php echo $data['id_simpanan']; ?></td>
-							<td><?php echo tgl_indo($data['tgl_simpanan']); ?></td>
-							<td><?php echo $data['id_anggota']; ?></td>
-							<td><?php echo $data['nama_anggota']; ?></td>
-							<td><?php echo $data['jenis_simpanan']; ?></td>
-							<td><?php echo "Rp ".number_format($data['jumlah_simpanan'],0,',','.');?></td>
-						</tr>
-					<?php 
-					}
-					?>
-						<tr>
-							<th colspan="6" style="text-align: center;">Total</th>
-							<td><?php echo "Rp ".number_format($simpan2,0,',','.'); ?></td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-			<?php 
-			}
-			?>
-		</div>
-    </div>
-<?php 
-	include ("style/footer.php");
-?>
+<?php include("style/footer.php");?>
