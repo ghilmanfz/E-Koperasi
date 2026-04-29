@@ -1,8 +1,8 @@
-<?php 
-	session_start();
-	session_destroy();
-	echo "<script language=javascript>
-          window.alert('Anda Berhasil Logout!');
-          window.location='index.php';
-          </script>";
+<?php
+session_start();
+$_SESSION = [];
+$_SESSION['flash'] = ['type' => 'success', 'msg' => 'Anda berhasil logout.'];
+session_regenerate_id(true);
+header('Location: login.php');
+exit;
 ?>

@@ -1,15 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
 	<meta charset="UTF-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Koperasi HIS</title>
-	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-
-	<link rel="stylesheet" href="../assets//css/bootstrap.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Koperasi HIS &mdash; Bendahara</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="../assets/css/bootstrap.min.css">
 	<link rel="stylesheet" href="../assets/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="../assets/Ionicons/css/ionicons.min.css">
-	<link rel="stylesheet" href="../assets/dist/css/AdminLTE.min.css">
-	<link rel="stylesheet" href="../assets/dist/css/skins/skin-red-light.min.css">
-
+	<link rel="stylesheet" href="../assets/css/sekretaris-theme.css">
 </head>

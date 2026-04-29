@@ -1,3 +1,4 @@
+<?php ob_start(); ?>
 <?php 
 	include ("style/header.php");
 	include ("style/sidebar.php");
@@ -93,18 +94,14 @@
 		$update  = mysqli_query($konek, "UPDATE tbl_anggota SET nik ='$nik', nama_anggota = '$nama_anggota', tempat_lahir = '$tempat_lahir', tanggal_lahir = '$tanggal_lahir', gender = '$gender', alamat = '$alamat', pekerjaan = '$pekerjaan', status = '$status' WHERE id_anggota = '$id_anggota'");
 
 		$update2 = mysqli_query($konek,"UPDATE tbl_login SET username = '$username', password = '$password' WHERE id_anggota = '$id_anggota'");
-		if($update){
-			echo "<script language=javascript>
-				window.alert('Berhasil Mengedit!');
-				window.location='dataanggota.php';
-				</script>";
-		}else{
-
-			echo "<script language=javascript>
-				window.alert('Gagal Mengedit!');
-				window.location='dataanggota.php';
-				</script>";
+		if ($update) {
+			$_SESSION['flash'] = ['type' => 'success', 'msg' => 'Berhasil Mengedit Profil!'];
+		} else {
+			$_SESSION['flash'] = ['type' => 'error', 'msg' => 'Gagal Mengedit Profil!'];
 		}
+		ob_end_clean();
+		header('Location: dataanggota.php');
+		exit;
 	}
 ?>
 

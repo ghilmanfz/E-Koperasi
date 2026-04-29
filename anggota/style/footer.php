@@ -1,17 +1,13 @@
-    </section>
-    <!-- /.content -->
-  </div>
-  <!-- /.content-wrapper -->
+    </div><!-- /.ag-content -->
 
-  <!-- Main Footer -->
-  <footer class="main-footer">
-    <!-- Default to the left -->
-    
-  </footer>
+    <footer class="ag-footer">
+      &copy; 2026 Koperasi PKK Karya Sejahtera. Seluruh Hak Cipta Dilindungi.<br>
+      Jl. H. Sa'alan Koang Jaya &bull; Telp: 08998178858 &bull; Email: Nurhsnh148@Gmail.com
+    </footer>
 
-<script src="../assets/js/dist/jquery.min.js"></script>
-<script src="../assets/dist/js/bootstrap.min.js"></script>
-<script src="../assets/dist/js/adminlte.min.js"></script>
-<script src="../assets/js/fastclick.min.js"></script>
+  </div><!-- /.ag-main -->
+</div><!-- /.ag-wrap -->
+
+<script src="../assets/js/bootstrap.min.js"></script>
 </body>
 </html>

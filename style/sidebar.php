@@ -1,3 +1,12 @@
+<?php
+include_once "config/koneksi.php";
+if (!isset($pub_settings)) {
+    $pub_settings = ['nama_koperasi'=>'Koperasi HIS','alamat'=>'Jl. HR. Rasuna Said','telepon'=>'0851-7201-4471','email'=>'mahisduhan2003@gmail.com','deskripsi'=>'Koperasi simpan pinjam yang melayani anggota dengan transparan dan terpercaya.','logo_path'=>'','foto_hero'=>'','syarat_anggota'=>"Warga Negara Indonesia\nBersedia membayar simpanan pokok dan wajib\nMenyetujui Anggaran Dasar dan ART\nMematuhi ketentuan koperasi",'syarat_pinjaman'=>"Anggota aktif koperasi\nMengisi formulir pengajuan\nMenyerahkan fotocopy KTP\nMenyerahkan fotocopy KK",'cta_judul'=>'Butuh Bantuan Administrasi?','cta_deskripsi'=>'Tim kami siap membantu Anda'];
+    mysqli_query($konek, "CREATE TABLE IF NOT EXISTS tbl_settings (setting_key VARCHAR(50) NOT NULL PRIMARY KEY, setting_value TEXT NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    $_ps = mysqli_query($konek, "SELECT setting_key,setting_value FROM tbl_settings");
+    if ($_ps) { while ($_psr=mysqli_fetch_assoc($_ps)){$pub_settings[$_psr['setting_key']]=$_psr['setting_value'];} }
+}
+?>
 <body class="hold-transition skin-blue-light sidebar-mini<?php echo !empty($isLanding) ? ' landing-page' : ''; ?>">
   <div class="wrapper">
 
@@ -5,8 +14,12 @@
     <header class="landing-navbar-wrap">
       <div class="landing-navbar-inner">
         <a href="index.php" class="landing-brand">
-          <img src="assets/dist/img/PKK.jpg" alt="Logo Koperasi">
-          <span><strong>Koperasi PKK</strong><em>Karya Sejahtera</em></span>
+          <?php if(!empty($pub_settings['logo_path'])): ?>
+          <img src="<?php echo htmlspecialchars($pub_settings['logo_path']); ?>" alt="Logo" style="height:36px;width:auto;max-width:100px;object-fit:contain;border-radius:6px;">
+          <?php else: ?>
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#3b82f6);border-radius:8px;color:#fff;font-weight:800;font-size:15px;flex-shrink:0;">K</span>
+          <?php endif; ?>
+          <span><strong><?php echo htmlspecialchars($pub_settings['nama_koperasi'] ?? 'Koperasi PKK'); ?></strong><em>Karya Sejahtera</em></span>
         </a>
         <nav class="landing-main-nav">
           <a href="#tentang">Home</a>

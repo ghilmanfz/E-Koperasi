@@ -7,8 +7,8 @@
 		<div class="landing-hero-grid">
 			<div class="landing-hero-copy">
 				<span class="landing-chip">Koperasi Konsumen Terpercaya</span>
-				<h1>Membangun Kesejahteraan Bersama <span>Koperasi PKK</span></h1>
-				<p>Koperasi PKK Karya Sejahtera hadir untuk memberdayakan ekonomi keluarga melalui layanan simpan pinjam yang aman, transparan, dan terpercaya.</p>
+				<h1>Membangun Kesejahteraan Bersama <span><?php echo htmlspecialchars($pub_settings['nama_koperasi'] ?? 'Koperasi PKK'); ?></span></h1>
+				<p><?php echo htmlspecialchars(!empty($pub_settings['deskripsi']) ? $pub_settings['deskripsi'] : 'Koperasi Karya Sejahtera hadir untuk memberdayakan ekonomi keluarga melalui layanan simpan pinjam yang aman, transparan, dan terpercaya.'); ?></p>
 				<div class="landing-actions">
 					<a href="daftar.php" class="btn btn-primary btn-lg">Daftar Menjadi Anggota</a>
 					<a href="#pinjaman" class="btn btn-outline-primary btn-lg">Ajukan Pinjaman</a>
@@ -17,11 +17,16 @@
 					<i class="fa fa-map-marker"></i>
 					<div>
 						<strong>Kantor Pusat</strong>
-						<p>Jl. H. Salian Koang Jaya</p>
+						<p><?php echo htmlspecialchars(!empty($pub_settings['alamat']) ? $pub_settings['alamat'] : 'Jl. H. Salian Koang Jaya'); ?></p>
 					</div>
 				</div>
 			</div>
 			<div class="landing-hero-visual" aria-hidden="true">
+				<?php if(!empty($pub_settings['foto_hero'])): ?>
+				<div class="landing-hero-illustration" style="overflow:hidden;border-radius:16px;padding:0;">
+					<img src="<?php echo htmlspecialchars($pub_settings['foto_hero']); ?>" alt="Foto Hero" style="width:100%;height:100%;object-fit:cover;border-radius:16px;display:block;">
+				</div>
+				<?php else: ?>
 				<div class="landing-hero-illustration">
 					<svg viewBox="0 0 220 160" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<rect width="220" height="160" rx="12" fill="#dce8f9"/>
@@ -30,6 +35,7 @@
 						<polygon points="90,140 155,80 220,140" fill="#c0d7f5"/>
 					</svg>
 				</div>
+				<?php endif; ?>
 				<div class="landing-hero-member">
 					<div class="member-dots">
 						<span></span><span></span><span></span>
@@ -56,11 +62,14 @@
 						</div>
 					</div>
 					<ul>
-						<li>Kewarganegaraan <strong>INDONESIA</strong>.</li>
-						<li>Keanggotaan bersifat perorangan dan bukan dalam bentuk badan hukum.</li>
-						<li>Bersedia membayar Simpanan Pokok dan Simpanan Wajib sesuai ketentuan.</li>
-						<li>Menyetujui Anggaran Dasar (AD) dan Anggaran Rumah Tangga (ART).</li>
-						<li>Mematuhi segala ketentuan yang berlaku dalam Koperasi.</li>
+						<?php
+						$_syarat_a = array_filter(array_map('trim', explode("\n", $pub_settings['syarat_anggota'] ?? '')));
+						if (empty($_syarat_a)) {
+							$_syarat_a = ['Kewarganegaraan INDONESIA.','Keanggotaan bersifat perorangan.','Bersedia membayar Simpanan Pokok dan Wajib.','Menyetujui Anggaran Dasar dan ART.','Mematuhi ketentuan yang berlaku.'];
+						}
+						foreach ($_syarat_a as $_item): ?>
+						<li><?php echo htmlspecialchars($_item); ?></li>
+						<?php endforeach; ?>
 					</ul>
 					<a href="daftar.php" class="btn btn-primary btn-block">Gabung Sekarang</a>
 				</div>
@@ -75,12 +84,14 @@
 						</div>
 					</div>
 					<ul>
-						<li>Berstatus sebagai <strong>Anggota PKK</strong> aktif.</li>
-						<li>Mengisi Formulir Pengajuan Pinjaman dengan lengkap.</li>
-						<li>Menyerahkan Fotocopy KTP (Suami & Istri jika sudah menikah).</li>
-						<li>Menyerahkan Fotocopy Kartu Keluarga (KK).</li>
-						<li>Menyerahkan Fotocopy Rekening Listrik terbaru.</li>
-						<li>Menyerahkan Slip Gaji (jika ada) dan Agunan yang sah.</li>
+						<?php
+						$_syarat_p = array_filter(array_map('trim', explode("\n", $pub_settings['syarat_pinjaman'] ?? '')));
+						if (empty($_syarat_p)) {
+							$_syarat_p = ['Berstatus sebagai anggota aktif.','Mengisi Formulir Pengajuan Pinjaman.','Menyerahkan Fotocopy KTP.','Menyerahkan Fotocopy Kartu Keluarga (KK).','Menyerahkan Slip Gaji dan Agunan yang sah.'];
+						}
+						foreach ($_syarat_p as $_item): ?>
+						<li><?php echo htmlspecialchars($_item); ?></li>
+						<?php endforeach; ?>
 					</ul>
 					<a href="login.php" class="btn btn-outline-download btn-block">Download Formulir</a>
 				</div>
