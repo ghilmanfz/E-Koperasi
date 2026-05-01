@@ -213,7 +213,7 @@ INSERT INTO `tbl_pinjaman` (`id_pinjaman`, `tgl_pinjaman`, `id_anggota`, `bunga_
 CREATE TABLE `tbl_settings` (
   `setting_key` varchar(50) NOT NULL,
   `setting_value` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tbl_settings`
