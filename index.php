@@ -155,29 +155,36 @@
 					<i class="fa fa-phone"></i>
 					<div>
 						<span>Telepon / WhatsApp</span>
-						<strong>0899 8178 858</strong>
+						<strong><?php echo htmlspecialchars(!empty($pub_settings['telepon']) ? $pub_settings['telepon'] : '0851-7201-4471'); ?></strong>
 					</div>
 				</div>
 				<div class="landing-contact-box">
 					<i class="fa fa-envelope-o"></i>
 					<div>
 						<span>Email Resmi</span>
-						<strong>nurhshn148@gmail.com</strong>
+						<strong><?php echo htmlspecialchars(!empty($pub_settings['email']) ? $pub_settings['email'] : 'mahisduhan2003@gmail.com'); ?></strong>
 					</div>
 				</div>
 			</div>
 			<div class="col-md-8">
 				<div class="landing-profile-card">
 					<div class="landing-profile-avatar">
-						<img src="assets/dist/img/PKK.jpg" alt="Profil Pengurus">
+						<?php if(!empty($pub_settings['foto_pengurus'])): ?>
+						<img src="<?php echo htmlspecialchars($pub_settings['foto_pengurus']); ?>" alt="Profil Pengurus" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+						<?php else: ?>
+						<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:linear-gradient(135deg,#2563eb,#7C3AED);color:#fff;font-size:2rem;font-weight:700;border-radius:50%;"><?php echo mb_substr(htmlspecialchars($pub_settings['nama_pengurus'] ?? 'N'), 0, 1); ?></span>
+						<?php endif; ?>
 					</div>
 					<div class="landing-profile-content">
 						<span>Kontak Person Utama</span>
-						<h3>Ibu Nurhasanah</h3>
-						<p>"Kepuasan anggota adalah prioritas utama kami dalam melayani pemberdayaan ekonomi PKK."</p>
+						<h3><?php echo htmlspecialchars(!empty($pub_settings['nama_pengurus']) ? $pub_settings['nama_pengurus'] : 'Ibu Nurhasanah'); ?></h3>
+						<p>"<?php echo htmlspecialchars(!empty($pub_settings['quote_pengurus']) ? $pub_settings['quote_pengurus'] : 'Kepuasan anggota adalah prioritas utama kami dalam melayani pemberdayaan ekonomi PKK.'); ?>"</p>
 						<div class="landing-profile-actions">
-							<a class="btn btn-success" href="#">Chat WhatsApp</a>
-							<a class="btn btn-default" href="#kontak">Profil Pengurus</a>
+							<?php
+							$wa_num = preg_replace('/[^0-9]/', '', $pub_settings['wa_pengurus'] ?? $pub_settings['telepon'] ?? '');
+							if(substr($wa_num,0,1)==='0') $wa_num='62'.substr($wa_num,1);
+							?>
+							<a class="btn btn-success" href="https://wa.me/<?php echo htmlspecialchars($wa_num); ?>" target="_blank" rel="noopener noreferrer">Chat WhatsApp</a>
 						</div>
 					</div>
 				</div>

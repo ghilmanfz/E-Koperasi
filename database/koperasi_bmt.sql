@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 28, 2026 at 11:19 PM
+-- Generation Time: May 01, 2026 at 07:59 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.3.9
 
@@ -207,6 +207,34 @@ INSERT INTO `tbl_pinjaman` (`id_pinjaman`, `tgl_pinjaman`, `id_anggota`, `bunga_
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tbl_settings`
+--
+
+CREATE TABLE `tbl_settings` (
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `tbl_settings`
+--
+
+INSERT INTO `tbl_settings` (`setting_key`, `setting_value`) VALUES
+('alamat', 'Jl. HR. Rasuna Said'),
+('cta_deskripsi', 'Silakan hubungi tim pengurus.'),
+('cta_judul', 'Butuh Bantuan Administrasi?'),
+('deskripsi', 'Sistem Informasi Manajemen Koperasi yang Modern, Transparan, dan Akuntabel.'),
+('email', 'mahisduhan2003@gmail.com'),
+('foto_hero', 'assets/uploads/hero_1777428519.jpg'),
+('logo_path', 'assets/uploads/logo_1777428519.jpg'),
+('nama_koperasi', 'Koperasi HIS'),
+('syarat_anggota', 'Kewarganegaraan INDONESIA.\r\nKeanggotaan bersifat perorangan dan bukan dalam bentuk badan hukum.\r\nBersedia membayar Simpanan Pokok dan Simpanan Wajib sesuai ketentuan.\r\nMenyetujui Anggaran Dasar (AD) dan Anggaran Rumah Tangga (ART).\r\nMematuhi segala ketentuan yang berlaku dalam Koperasi.'),
+('syarat_pinjaman', 'Berstatus sebagai Anggota PKK aktif.\r\nMengisi Formulir Pengajuan Pinjaman dengan lengkap.\r\nMenyerahkan Fotocopy KTP (Suami & Istri jika sudah menikah).\r\nMenyerahkan Fotocopy Kartu Keluarga (KK).\r\nMenyerahkan Fotocopy Rekening Listrik terbaru.\r\nMenyerahkan Slip Gaji (jika ada) dan Agunan yang sah.'),
+('telepon', '0851-7201-4471');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tbl_simpanan`
 --
 
@@ -291,34 +319,6 @@ INSERT INTO `tbl_tabungan` (`id_tabungan`, `id_anggota`, `saldo`, `saldo_wajib`)
 ('TBN009', 'AGT009', 0, 0),
 ('TBN010', 'AGT010', 0, 0);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `tbl_settings`
---
-
-CREATE TABLE `tbl_settings` (
-  `setting_key` varchar(50) NOT NULL,
-  `setting_value` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Dumping data for table `tbl_settings`
---
-
-INSERT INTO `tbl_settings` (`setting_key`, `setting_value`) VALUES
-('nama_koperasi', 'Koperasi HIS'),
-('alamat', 'Jl. HR. Rasuna Said'),
-('telepon', '0851-7201-4471'),
-('email', 'mahisduhan2003@gmail.com'),
-('deskripsi', 'Sistem Informasi Manajemen Koperasi yang Modern, Transparan, dan Akuntabel. Kelola data anggota dan keuangan dengan lebih efisien.'),
-('logo_path', ''),
-('foto_hero', ''),
-('syarat_anggota', 'Kewarganegaraan INDONESIA asli.\nKeanggotaan bersifat perorangan dan bukan dalam bentuk badan hukum.\nBersedia membayar Simpanan Pokok dan Simpanan Wajib sesuai ketentuan yang ditetapkan.\nMenyetujui Anggaran Dasar, Anggaran Rumah Tangga dan ketentuan yang berlaku dalam Koperasi.'),
-('syarat_pinjaman', 'Berstatus aktif sebagai Anggota Koperasi.\nMengisi Formulir Pinjaman secara lengkap.\nMenyerahkan Fotocopy KTP (Suami & Istri bagi yang sudah menikah).\nMenyerahkan Fotocopy KK, Rekening Listrik, Slip Gaji, dan dokumen Agunan.\nMelengkapi Pengajuan Pinjaman dengan Proposal Tujuan Penggunaan Dana.'),
-('cta_judul', 'Butuh Bantuan Administrasi?'),
-('cta_deskripsi', 'Silakan hubungi tim pengurus atau buka modul data anggota untuk pengelolaan lebih lanjut.');
-
 --
 -- Indexes for dumped tables
 --
@@ -354,6 +354,12 @@ ALTER TABLE `tbl_pinjaman`
   ADD PRIMARY KEY (`id_pinjaman`);
 
 --
+-- Indexes for table `tbl_settings`
+--
+ALTER TABLE `tbl_settings`
+  ADD PRIMARY KEY (`setting_key`);
+
+--
 -- Indexes for table `tbl_simpanan`
 --
 ALTER TABLE `tbl_simpanan`
@@ -364,12 +370,6 @@ ALTER TABLE `tbl_simpanan`
 --
 ALTER TABLE `tbl_tabungan`
   ADD PRIMARY KEY (`id_tabungan`);
-
---
--- Indexes for table `tbl_settings`
---
-ALTER TABLE `tbl_settings`
-  ADD PRIMARY KEY (`setting_key`);
 
 --
 -- AUTO_INCREMENT for dumped tables

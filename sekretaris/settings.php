@@ -112,6 +112,47 @@ $syarat_pinjaman_lines = array_filter(array_map('trim', explode("\n", $s['syarat
     </div>
   </div>
 
+  <!-- ===== Kontak Person ===== -->
+  <div class="sk-card sk-settings-card">
+    <div class="sk-settings-card-header">
+      <i class="fa fa-user-circle"></i> Kontak Person Utama
+    </div>
+    <div class="sk-settings-card-body">
+      <div class="sk-settings-row">
+        <div class="sk-settings-field">
+          <label class="sk-settings-label">Nama Pengurus</label>
+          <input type="text" name="nama_pengurus" class="sk-settings-input" value="<?php echo htmlspecialchars($s['nama_pengurus'] ?? ''); ?>">
+        </div>
+        <div class="sk-settings-field">
+          <label class="sk-settings-label">No. WhatsApp <span class="sk-settings-hint">(angka saja, misal: 089981788858)</span></label>
+          <input type="text" name="wa_pengurus" class="sk-settings-input" value="<?php echo htmlspecialchars($s['wa_pengurus'] ?? ''); ?>" placeholder="089981788858">
+        </div>
+      </div>
+      <div class="sk-settings-field sk-settings-full">
+        <label class="sk-settings-label">Kutipan / Quote</label>
+        <textarea name="quote_pengurus" class="sk-settings-input sk-settings-textarea" rows="3"><?php echo htmlspecialchars($s['quote_pengurus'] ?? ''); ?></textarea>
+      </div>
+      <div class="sk-settings-field sk-settings-full">
+        <label class="sk-settings-label">Foto Pengurus <span class="sk-settings-hint">(ditampilkan di halaman Kontak)</span></label>
+        <?php if (!empty($s['foto_pengurus'])): ?>
+        <div class="sk-settings-media-preview">
+          <img src="../<?php echo htmlspecialchars($s['foto_pengurus']); ?>" alt="Foto Pengurus" class="sk-settings-hero-thumb">
+          <label class="sk-settings-del-label">
+            <input type="checkbox" name="hapus_foto_pengurus" value="1"> Hapus foto
+          </label>
+        </div>
+        <?php else: ?>
+        <div class="sk-settings-media-placeholder">
+          <i class="fa fa-user-circle-o"></i>
+          <span>Belum ada foto pengurus</span>
+        </div>
+        <?php endif; ?>
+        <input type="file" name="foto_pengurus_file" class="sk-settings-file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp">
+        <span class="sk-settings-hint">Format: PNG, JPG, GIF, WEBP &bull; Maks. 5MB &bull; Disarankan foto persegi (1:1)</span>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Syarat & Ketentuan ===== -->
   <div class="sk-card sk-settings-card">
     <div class="sk-settings-card-header">
@@ -174,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
     ob_end_clean();
 
     // Text fields
-    $text_fields = ['nama_koperasi','alamat','telepon','email','deskripsi','syarat_anggota','syarat_pinjaman','cta_judul','cta_deskripsi'];
+    $text_fields = ['nama_koperasi','alamat','telepon','email','deskripsi','nama_pengurus','quote_pengurus','wa_pengurus','syarat_anggota','syarat_pinjaman','cta_judul','cta_deskripsi'];
     foreach ($text_fields as $f) {
         $val = mysqli_real_escape_string($konek, trim($_POST[$f] ?? ''));
         $key = mysqli_real_escape_string($konek, $f);
@@ -209,6 +250,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
         }
     } elseif (!empty($_POST['hapus_foto_hero'])) {
         mysqli_query($konek, "UPDATE tbl_settings SET setting_value='' WHERE setting_key='foto_hero'");
+    }
+
+    // Foto pengurus upload
+    if (!empty($_FILES['foto_pengurus_file']['name']) && $_FILES['foto_pengurus_file']['error'] === UPLOAD_ERR_OK) {
+        $ext = strtolower(pathinfo($_FILES['foto_pengurus_file']['name'], PATHINFO_EXTENSION));
+        $allowed = ['png','jpg','jpeg','gif','webp'];
+        if (in_array($ext, $allowed) && $_FILES['foto_pengurus_file']['size'] <= 5 * 1024 * 1024) {
+            $fname = 'pengurus_' . time() . '.' . $ext;
+            if (move_uploaded_file($_FILES['foto_pengurus_file']['tmp_name'], $upload_dir . $fname)) {
+                $path = mysqli_real_escape_string($konek, 'assets/uploads/' . $fname);
+                mysqli_query($konek, "INSERT INTO tbl_settings (setting_key,setting_value) VALUES ('foto_pengurus','$path') ON DUPLICATE KEY UPDATE setting_value='$path'");
+            }
+        }
+    } elseif (!empty($_POST['hapus_foto_pengurus'])) {
+        mysqli_query($konek, "UPDATE tbl_settings SET setting_value='' WHERE setting_key='foto_pengurus'");
     }
 
     $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Pengaturan berhasil disimpan.'];
